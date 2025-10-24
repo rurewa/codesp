@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: my-postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - postgres-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: my-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com    # 👈 Ваш email для входа
+      PGADMIN_DEFAULT_PASSWORD: admin            # 👈 Ваш пароль для входа
+    ports:
+      - "8081:80"                                # 👈 pgAdmin будет на порту 8080
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin         # 👈 Сохраняем настройки pgAdmin
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    networks:
+      - postgres-net
+
+networks:
+  postgres-net:
+    driver: bridge
